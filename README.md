@@ -1,7 +1,15 @@
-![Chatterbox Turbo Image](./Chatterbox-Turbo.jpg)
+```
+╔═══════════════════════════════════════════════════════════════╗
+║                                                               ║
+║    ╔═╗╦ ╦╔═╗╔╦╗╔╦╗╔═╗╦═╗╔╗ ╔═╗═╗ ╦                          ║
+║    ║  ╠═╣╠═╣ ║  ║ ║╣ ╠╦╝╠╩╗║ ║╔╩╦╝                          ║
+║    ╚═╝╩ ╩╩ ╩ ╩  ╩ ╚═╝╩╚═╚═╝╚═╝╩ ╚═                          ║
+║         FastAPI - OpenAI Compatible TTS                      ║
+║                                                               ║
+╚═══════════════════════════════════════════════════════════════╝
+```
 
-
-# Chatterbox TTS
+# Chatterbox FastAPI
 
 [![Alt Text](https://img.shields.io/badge/listen-demo_samples-blue)](https://resemble-ai.github.io/chatterbox_turbo_demopage/)
 [![Alt Text](https://huggingface.co/datasets/huggingface/badges/resolve/main/open-in-hf-spaces-sm.svg)](https://huggingface.co/spaces/ResembleAI/chatterbox-turbo-demo)
@@ -10,159 +18,260 @@
 
 _Made with ♥️ by <a href="https://resemble.ai" target="_blank"><img width="100" alt="resemble-logo-horizontal" src="https://github.com/user-attachments/assets/35cf756b-3506-4943-9c72-c05ddfa4e525" /></a>
 
-**Chatterbox** is a family of three state-of-the-art, open-source text-to-speech models by Resemble AI.
+**Chatterbox FastAPI** is an OpenAI-compatible REST API wrapper for Chatterbox TTS models. This fork adds FastAPI support with OpenAI-compatible endpoints, focusing on the multilingual model with 23+ language support, and removes watermarking to save resources.
 
-We are excited to introduce **Chatterbox-Turbo**, our most efficient model yet. Built on a streamlined 350M parameter architecture, **Turbo** delivers high-quality speech with less compute and VRAM than our previous models. We have also distilled the speech-token-to-mel decoder, previously a bottleneck, reducing generation from 10 steps to just **one**, while retaining high-fidelity audio output.
+## ✨ Features
 
-**Paralinguistic tags** are now native to the Turbo model, allowing you to use `[cough]`, `[laugh]`, `[chuckle]`, and more to add distinct realism. While Turbo was built primarily for low-latency voice agents, it excels at narration and creative workflows.
+- 🌐 **OpenAI-Compatible API** - Drop-in replacement for OpenAI's TTS API
+- 🗣️ **Multilingual Support** - 23+ languages with zero-shot voice cloning
+- ⚡ **FastAPI Backend** - Modern, fast, production-ready API
+- 🚀 **No Watermarking** - Optimized for performance, watermarking removed
+- 🎯 **Simple Integration** - Compatible with OpenAI Python client
 
-If you like the model but need to scale or tune it for higher accuracy, check out our competitively priced TTS service (<a href="https://resemble.ai">link</a>). It delivers reliable performance with ultra-low latency of sub 200ms—ideal for production use in agents, applications, or interactive media.
+## 🚀 Quick Start
 
-<img width="1200" height="600" alt="Podonos Turbo Eval" src="https://storage.googleapis.com/chatterbox-demo-samples/turbo/podonos_turbo.png" />
+### Installation
 
-### ⚡ Model Zoo
-
-Choose the right model for your application.
-
-| Model                                                                                                           | Size | Languages | Key Features                                            | Best For                                     | 🤗                                                                  | Examples |
-|:----------------------------------------------------------------------------------------------------------------| :--- | :--- |:--------------------------------------------------------|:---------------------------------------------|:--------------------------------------------------------------------------| :--- |
-| **Chatterbox-Turbo**                                                                                            | **350M** | **English** | Paralinguistic Tags (`[laugh]`), Lower Compute and VRAM | Zero-shot voice agents,  Production          | [Demo](https://huggingface.co/spaces/ResembleAI/chatterbox-turbo-demo)        | [Listen](https://resemble-ai.github.io/chatterbox_turbo_demopage/) |
-| Chatterbox-Multilingual [(Language list)](#supported-languages)                                                 | 500M | 23+ | Zero-shot cloning, Multiple Languages                   | Global applications, Localization            | [Demo](https://huggingface.co/spaces/ResembleAI/Chatterbox-Multilingual-TTS) | [Listen](https://resemble-ai.github.io/chatterbox_demopage/) |
-| Chatterbox [(Tips and Tricks)](#original-chatterbox-tips)                                                       | 500M | English | CFG & Exaggeration tuning                               | General zero-shot TTS with creative controls | [Demo](https://huggingface.co/spaces/ResembleAI/Chatterbox)              | [Listen](https://resemble-ai.github.io/chatterbox_demopage/) |
-
-## Installation
 ```shell
 pip install chatterbox-tts
 ```
 
-Alternatively, you can install from source:
+Or install from source:
 ```shell
-# conda create -yn chatterbox python=3.11
-# conda activate chatterbox
-
-git clone https://github.com/resemble-ai/chatterbox.git
-cd chatterbox
+git clone https://github.com/groxaxo/chatterbox-FASTAPI.git
+cd chatterbox-FASTAPI
 pip install -e .
 ```
-We developed and tested Chatterbox on Python 3.11 on Debian 11 OS; the versions of the dependencies are pinned in `pyproject.toml` to ensure consistency. You can modify the code or dependencies in this installation mode.
 
-## Usage
+### Start the FastAPI Server
 
-##### Chatterbox-Turbo
-
-```python
-import torchaudio as ta
-import torch
-from chatterbox.tts_turbo import ChatterboxTurboTTS
-
-# Load the Turbo model
-model = ChatterboxTurboTTS.from_pretrained(device="cuda")
-
-# Generate with Paralinguistic Tags
-text = "Hi there, Sarah here from MochaFone calling you back [chuckle], have you got one minute to chat about the billing issue?"
-
-# Generate audio (requires a reference clip for voice cloning)
-wav = model.generate(text, audio_prompt_path="your_10s_ref_clip.wav")
-
-ta.save("test-turbo.wav", wav, model.sr)
+```shell
+python -m api.main
 ```
 
-##### Chatterbox and Chatterbox-Multilingual
+Or with uvicorn directly:
+```shell
+uvicorn api.main:app --host 0.0.0.0 --port 8000
+```
+
+The server will start on `http://localhost:8000`
+
+## 📖 API Usage
+
+### Using OpenAI Python Client
 
 ```python
+from openai import OpenAI
 
-import torchaudio as ta
-from chatterbox.tts import ChatterboxTTS
-from chatterbox.mtl_tts import ChatterboxMultilingualTTS
+# Initialize client pointing to local server
+client = OpenAI(
+    base_url="http://localhost:8000/v1",
+    api_key="not-needed"  # API key not required for local server
+)
 
-# English example
-model = ChatterboxTTS.from_pretrained(device="cuda")
+# Generate speech
+response = client.audio.speech.create(
+    model="chatterbox-multilingual",
+    voice="default",
+    input="Hello! This is a test of the Chatterbox multilingual TTS system.",
+    language="en"  # Optional: specify language code
+)
 
-text = "Ezreal and Jinx teamed up with Ahri, Yasuo, and Teemo to take down the enemy's Nexus in an epic late-game pentakill."
-wav = model.generate(text)
-ta.save("test-english.wav", wav, model.sr)
-
-# Multilingual examples
-multilingual_model = ChatterboxMultilingualTTS.from_pretrained(device=device)
-
-french_text = "Bonjour, comment ça va? Ceci est le modèle de synthèse vocale multilingue Chatterbox, il prend en charge 23 langues."
-wav_french = multilingual_model.generate(spanish_text, language_id="fr")
-ta.save("test-french.wav", wav_french, model.sr)
-
-chinese_text = "你好，今天天气真不错，希望你有一个愉快的周末。"
-wav_chinese = multilingual_model.generate(chinese_text, language_id="zh")
-ta.save("test-chinese.wav", wav_chinese, model.sr)
-
-# If you want to synthesize with a different voice, specify the audio prompt
-AUDIO_PROMPT_PATH = "YOUR_FILE.wav"
-wav = model.generate(text, audio_prompt_path=AUDIO_PROMPT_PATH)
-ta.save("test-2.wav", wav, model.sr)
+# Save to file
+response.stream_to_file("output.mp3")
 ```
-See `example_tts.py` and `example_vc.py` for more examples.
 
-## Supported Languages 
+### Using requests
+
+```python
+import requests
+
+# Generate speech
+response = requests.post(
+    "http://localhost:8000/v1/audio/speech",
+    json={
+        "model": "chatterbox-multilingual",
+        "input": "Bonjour! Ceci est un test du système TTS multilingue Chatterbox.",
+        "voice": "default",
+        "language": "fr",  # French
+        "response_format": "mp3"
+    }
+)
+
+# Save audio
+with open("output.mp3", "wb") as f:
+    f.write(response.content)
+```
+
+### Multilingual Examples
+
+```python
+from openai import OpenAI
+
+client = OpenAI(base_url="http://localhost:8000/v1", api_key="not-needed")
+
+# Spanish
+response = client.audio.speech.create(
+    model="chatterbox-multilingual",
+    voice="default",
+    input="Hola, ¿cómo estás?",
+    language="es"
+)
+response.stream_to_file("spanish.mp3")
+
+# Chinese
+response = client.audio.speech.create(
+    model="chatterbox-multilingual",
+    voice="default",
+    input="你好，今天天气真不错。",
+    language="zh"
+)
+response.stream_to_file("chinese.mp3")
+
+# Japanese
+response = client.audio.speech.create(
+    model="chatterbox-multilingual",
+    voice="default",
+    input="こんにちは、お元気ですか？",
+    language="ja"
+)
+response.stream_to_file("japanese.mp3")
+```
+
+### Voice Cloning with Audio Prompt
+
+```python
+from openai import OpenAI
+
+client = OpenAI(base_url="http://localhost:8000/v1", api_key="not-needed")
+
+response = client.audio.speech.create(
+    model="chatterbox-multilingual",
+    voice="default",
+    input="This will be spoken in the voice from the audio prompt.",
+    audio_prompt="path/to/your/reference_audio.wav"
+)
+response.stream_to_file("cloned_voice.mp3")
+```
+
+## 🌍 Supported Languages
+
 Arabic (ar) • Danish (da) • German (de) • Greek (el) • English (en) • Spanish (es) • Finnish (fi) • French (fr) • Hebrew (he) • Hindi (hi) • Italian (it) • Japanese (ja) • Korean (ko) • Malay (ms) • Dutch (nl) • Norwegian (no) • Polish (pl) • Portuguese (pt) • Russian (ru) • Swedish (sv) • Swahili (sw) • Turkish (tr) • Chinese (zh)
 
-## Original Chatterbox Tips
-- **General Use (TTS and Voice Agents):**
-  - Ensure that the reference clip matches the specified language tag. Otherwise, language transfer outputs may inherit the accent of the reference clip’s language. To mitigate this, set `cfg_weight` to `0`.
-  - The default settings (`exaggeration=0.5`, `cfg_weight=0.5`) work well for most prompts across all languages.
-  - If the reference speaker has a fast speaking style, lowering `cfg_weight` to around `0.3` can improve pacing.
+## 🔌 API Endpoints
 
-- **Expressive or Dramatic Speech:**
-  - Try lower `cfg_weight` values (e.g. `~0.3`) and increase `exaggeration` to around `0.7` or higher.
-  - Higher `exaggeration` tends to speed up speech; reducing `cfg_weight` helps compensate with slower, more deliberate pacing.
+### POST `/v1/audio/speech`
 
+Generate speech from text.
 
-## Built-in PerTh Watermarking for Responsible AI
-
-Every audio file generated by Chatterbox includes [Resemble AI's Perth (Perceptual Threshold) Watermarker](https://github.com/resemble-ai/perth) - imperceptible neural watermarks that survive MP3 compression, audio editing, and common manipulations while maintaining nearly 100% detection accuracy.
-
-
-## Watermark extraction
-
-You can look for the watermark using the following script.
-
-```python
-import perth
-import librosa
-
-AUDIO_PATH = "YOUR_FILE.wav"
-
-# Load the watermarked audio
-watermarked_audio, sr = librosa.load(AUDIO_PATH, sr=None)
-
-# Initialize watermarker (same as used for embedding)
-watermarker = perth.PerthImplicitWatermarker()
-
-# Extract watermark
-watermark = watermarker.get_watermark(watermarked_audio, sample_rate=sr)
-print(f"Extracted watermark: {watermark}")
-# Output: 0.0 (no watermark) or 1.0 (watermarked)
-```
-
-
-## Official Discord
-
-👋 Join us on [Discord](https://discord.gg/rJq9cRJBJ6) and let's build something awesome together!
-
-## Acknowledgements
-- [Cosyvoice](https://github.com/FunAudioLLM/CosyVoice)
-- [Real-Time-Voice-Cloning](https://github.com/CorentinJ/Real-Time-Voice-Cloning)
-- [HiFT-GAN](https://github.com/yl4579/HiFTNet)
-- [Llama 3](https://github.com/meta-llama/llama3)
-- [S3Tokenizer](https://github.com/xingchensong/S3Tokenizer)
-
-## Citation
-If you find this model useful, please consider citing.
-```
-@misc{chatterboxtts2025,
-  author       = {{Resemble AI}},
-  title        = {{Chatterbox-TTS}},
-  year         = {2025},
-  howpublished = {\url{https://github.com/resemble-ai/chatterbox}},
-  note         = {GitHub repository}
+**Request Body:**
+```json
+{
+  "model": "chatterbox-multilingual",
+  "input": "Text to synthesize",
+  "voice": "default",
+  "language": "en",
+  "response_format": "mp3",
+  "speed": 1.0,
+  "temperature": 0.7,
+  "cfg_weight": 0.5,
+  "exaggeration": 0.5,
+  "audio_prompt": null
 }
 ```
-## Disclaimer
-Don't use this model to do bad things. Prompts are sourced from freely available data on the internet.
+
+**Supported Formats:** mp3, wav, opus, flac, pcm
+
+### GET `/v1/audio/voices`
+
+List available voices and supported languages.
+
+### GET `/v1/models`
+
+List available TTS models.
+
+### GET `/health`
+
+Health check endpoint.
+
+### GET `/docs`
+
+Interactive API documentation (Swagger UI).
+
+## ⚙️ Configuration
+
+### Request Parameters
+
+- `model`: Model to use (`chatterbox-multilingual`, `tts-1`, `tts-1-hd`)
+- `input`: Text to synthesize (required)
+- `voice`: Voice ID (default: "default")
+- `language`: Language code (e.g., "en", "es", "fr", "zh")
+- `response_format`: Output format (mp3, wav, opus, flac, pcm)
+- `speed`: Speech speed (0.25 to 4.0, default: 1.0)
+- `temperature`: Sampling temperature (0.0 to 1.0, default: 0.7)
+- `cfg_weight`: Classifier-free guidance weight (0.0 to 1.0, default: 0.5)
+- `exaggeration`: Expressiveness level (0.0 to 1.0, default: 0.5)
+- `audio_prompt`: Path to reference audio for voice cloning
+
+## 🔧 Direct Python Usage (without API)
+
+You can still use the models directly in Python:
+
+```python
+import torchaudio as ta
+from chatterbox.mtl_tts import ChatterboxMultilingualTTS
+
+# Load model
+model = ChatterboxMultilingualTTS.from_pretrained(device="cuda")
+
+# Generate speech
+text = "Bonjour, comment ça va?"
+wav = model.generate(text, language_id="fr")
+
+# Save
+ta.save("output.wav", wav, model.sr)
+```
+
+## 🎯 Changes from Original Chatterbox
+
+This fork includes the following modifications:
+
+1. **FastAPI Integration** - Added OpenAI-compatible REST API
+2. **Watermark Removal** - Removed PerTh watermarking to save resources
+3. **Multilingual Focus** - Optimized for multilingual model usage
+4. **API Documentation** - Added comprehensive API docs and examples
+
+## 📚 Original Chatterbox Models
+
+**Chatterbox** is a family of three state-of-the-art, open-source text-to-speech models by Resemble AI:
+
+| Model | Size | Languages | Key Features |
+|-------|------|-----------|--------------|
+| **Chatterbox-Turbo** | 350M | English | Paralinguistic Tags (`[laugh]`), Lower Compute |
+| **Chatterbox-Multilingual** | 500M | 23+ | Zero-shot cloning, Multiple Languages |
+| **Chatterbox** | 500M | English | CFG & Exaggeration tuning |
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## 📝 License
+
+This project maintains the same license as the original Chatterbox project.
+
+## 🙏 Acknowledgements
+
+- [Resemble AI](https://resemble.ai) for the original Chatterbox models
+- [Kokoro-FastAPI](https://github.com/remsky/Kokoro-FastAPI) for API implementation inspiration
+- Original Chatterbox acknowledgements:
+  - [Cosyvoice](https://github.com/FunAudioLLM/CosyVoice)
+  - [Real-Time-Voice-Cloning](https://github.com/CorentinJ/Real-Time-Voice-Cloning)
+  - [HiFT-GAN](https://github.com/yl4579/HiFTNet)
+  - [Llama 3](https://github.com/meta-llama/llama3)
+  - [S3Tokenizer](https://github.com/xingchensong/S3Tokenizer)
+
+## ⚠️ Disclaimer
+
+This is a modified version of Chatterbox. For production use with guarantees and support, consider [Resemble AI's TTS service](https://resemble.ai).
+
+Don't use this model for malicious purposes. Prompts are sourced from freely available data on the internet.

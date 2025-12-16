@@ -44,5 +44,15 @@ syn_out/
 checkpoints/
 .gradio
 
-# Ignore generated sample .wav files
+# Ignore generated sample audio files
 **/*.wav
+**/*.mp3
+**/*.flac
+**/*.opus
+test_*.mp3
+test_*.wav
+test_*.flac
+test_*.opus
+
+# Old README backup
+README_OLD.md
