@@ -256,9 +256,12 @@ This project maintains the same license as the original Chatterbox project.
 
 ## 🙏 Acknowledgements
 
-- [Resemble AI](https://resemble.ai) for the original Chatterbox models
-- [Kokoro-FastAPI](https://github.com/remsky/Kokoro-FastAPI) for API implementation inspiration
-- Original Chatterbox acknowledgements:
+This project builds upon excellent work from the community:
+
+- **[Resemble AI](https://resemble.ai)** - For creating the amazing Chatterbox TTS models and making them open source
+- **[Kokoro-FastAPI](https://github.com/remsky/Kokoro-FastAPI)** - For the FastAPI implementation patterns and OpenWebUI integration logic that inspired this project
+- **Google Antigravity Team** - For development assistance and tooling support
+- Original Chatterbox project acknowledgements:
   - [Cosyvoice](https://github.com/FunAudioLLM/CosyVoice)
   - [Real-Time-Voice-Cloning](https://github.com/CorentinJ/Real-Time-Voice-Cloning)
   - [HiFT-GAN](https://github.com/yl4579/HiFTNet)
@@ -270,3 +273,4 @@ This project maintains the same license as the original Chatterbox project.
 This is a modified version of Chatterbox. For production use with guarantees and support, consider [Resemble AI's TTS service](https://resemble.ai).
 
 Don't use this model for malicious purposes. Prompts are sourced from freely available data on the internet.
+
