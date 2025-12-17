@@ -31,7 +31,7 @@ from api.schemas.openai import HealthResponse
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[logging.StreamHandler(sys.stdout)]
+    handlers=[logging.StreamHandler(sys.stdout)],
 )
 logger = logging.getLogger(__name__)
 
@@ -40,13 +40,13 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     """Lifespan context manager for model initialization"""
     logger.info("Starting Chatterbox FastAPI server...")
-    
+
     # Initialize TTS service
     try:
         service = await get_tts_service()
         device = service.device
         model_name = service.model_name
-        
+
         startup_msg = """
 ╔═══════════════════════════════════════════════════════════════╗
 ║                                                               ║
@@ -68,18 +68,18 @@ async def lifespan(app: FastAPI):
             logger.info("Using Apple Metal Performance Shaders (MPS)")
         else:
             logger.info("Running on CPU")
-        
+
         logger.info(f"Supported languages: {len(service.get_supported_languages())}")
         logger.info("Server ready!")
         logger.info("API docs: http://localhost:8000/docs")
         logger.info("Health check: http://localhost:8000/health")
-        
+
     except Exception as e:
         logger.error(f"Failed to initialize service: {e}")
         raise
-    
+
     yield
-    
+
     logger.info("Shutting down Chatterbox FastAPI server...")
 
 
@@ -116,8 +116,8 @@ async def root():
             "docs": "/docs",
             "speech": "/v1/audio/speech",
             "voices": "/v1/audio/voices",
-            "models": "/v1/models"
-        }
+            "models": "/v1/models",
+        },
     }
 
 
@@ -127,26 +127,19 @@ async def health_check():
     try:
         service = await get_tts_service()
         return HealthResponse(
-            status="healthy",
-            model=service.model_name,
-            device=service.device
+            status="healthy", model=service.model_name, device=service.device
         )
     except Exception as e:
         logger.error(f"Health check failed: {e}")
         return JSONResponse(
-            status_code=503,
-            content={
-                "status": "unhealthy",
-                "error": str(e)
-            }
+            status_code=503, content={"status": "unhealthy", "error": str(e)}
         )
 
 
 if __name__ == "__main__":
+    import os
+
+    port = int(os.environ.get("PORT", 8000))
     uvicorn.run(
-        "main:app",
-        host="0.0.0.0",
-        port=8000,
-        reload=False,
-        log_level="info"
+        "api.main:app", host="0.0.0.0", port=port, reload=False, log_level="info"
     )
