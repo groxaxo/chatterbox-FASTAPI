@@ -27,6 +27,67 @@ _Made with ♥️ by <a href="https://resemble.ai" target="_blank"><img width="1
 - ⚡ **FastAPI Backend** - Modern, fast, production-ready API
 - 🚀 **No Watermarking** - Optimized for performance, watermarking removed
 - 🎯 **Simple Integration** - Compatible with OpenAI Python client
+- 🌍 **Language-Specific Models** - Model variants for each language (perfect for OpenWebUI)
+
+## 🌍 Language-Specific Model Variants
+
+**New Feature:** Select your language via the model name instead of the language parameter!
+
+This is especially useful for **OpenWebUI**, which always sends `language="en"` regardless of user preference.
+
+### How It Works
+
+Instead of using `chatterbox-multilingual` with a language parameter, use a language-specific model variant:
+
+| Model Name | Language | Auto-Detects |
+|------------|----------|--------------|
+| `chatterbox-multilingual-es` | Spanish | ✅ Yes |
+| `chatterbox-multilingual-fr` | French | ✅ Yes |
+| `chatterbox-multilingual-de` | German | ✅ Yes |
+| `chatterbox-multilingual-zh` | Chinese | ✅ Yes |
+| `chatterbox-multilingual-ja` | Japanese | ✅ Yes |
+| `chatterbox-multilingual-pt` | Portuguese | ✅ Yes |
+| `chatterbox-multilingual-ru` | Russian | ✅ Yes |
+| `chatterbox-multilingual-it` | Italian | ✅ Yes |
+| ... and 15 more! | | |
+
+**All 23 Supported Languages:** ar, da, de, el, en, es, fi, fr, he, hi, it, ja, ko, ms, nl, no, pl, pt, ru, sv, sw, tr, zh
+
+### Example Usage
+
+```python
+from openai import OpenAI
+
+client = OpenAI(base_url="http://localhost:8000/v1", api_key="not-needed")
+
+# Use Spanish - language parameter is ignored!
+response = client.audio.speech.create(
+    model="chatterbox-multilingual-es",  # 🇪🇸 Spanish
+    voice="default",
+    input="Hola, ¿cómo estás?",
+    language="en"  # ⚠️ This will be IGNORED - Spanish is used
+)
+response.stream_to_file("spanish.mp3")
+
+# Use French
+response = client.audio.speech.create(
+    model="chatterbox-multilingual-fr",  # 🇫🇷 French
+    voice="default",
+    input="Bonjour, comment allez-vous?"
+)
+response.stream_to_file("french.mp3")
+```
+
+### For OpenWebUI Users
+
+Simply select the language-specific model from the dropdown:
+- Select `chatterbox-multilingual-es` for Spanish 🇪🇸
+- Select `chatterbox-multilingual-fr` for French 🇫🇷
+- Select `chatterbox-multilingual-de` for German 🇩🇪
+- And so on...
+
+The language will be automatically detected from the model name!
+
 
 ## 🚀 Quick Start
 
