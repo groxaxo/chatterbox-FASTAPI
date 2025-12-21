@@ -25,4 +25,8 @@ echo "Note: First run will download models (~500MB+), please be patient..."
 echo ""
 
 # Launch server
-PORT=$PORT conda run -n chatterbox-fastapi python -m api.main
+# Launch server
+source /home/op/miniconda/etc/profile.d/conda.sh
+conda activate chatterbox-fastapi
+export PORT
+python -m api.main

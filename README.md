@@ -214,6 +214,19 @@ response.stream_to_file("cloned_voice.mp3")
 
 Arabic (ar) • Danish (da) • German (de) • Greek (el) • English (en) • Spanish (es) • Finnish (fi) • French (fr) • Hebrew (he) • Hindi (hi) • Italian (it) • Japanese (ja) • Korean (ko) • Malay (ms) • Dutch (nl) • Norwegian (no) • Polish (pl) • Portuguese (pt) • Russian (ru) • Swedish (sv) • Swahili (sw) • Turkish (tr) • Chinese (zh)
 
+
+## ⚙️ Environment Variables
+
+You can configure the server defaults by setting these environment variables in your `.env` file or shell:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `CHATTERBOX_TEMPERATURE` | `0.5` | Default sampling temperature (lower = more stable) |
+| `CHATTERBOX_CFG_WEIGHT` | `0.35` | Default classifier-free guidance weight |
+| `CHATTERBOX_EXAGGERATION` | `1.0` | Default exaggeration level |
+| `CUDA_VISIBLE_DEVICES` | - | GPU device index to use |
+| `PORT` | `8000` | Server port |
+
 ## 🔌 API Endpoints
 
 ### POST `/v1/audio/speech`

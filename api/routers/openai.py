@@ -64,15 +64,45 @@ async def create_speech(request: OpenAISpeechRequest):
         # Use language from model name if detected, otherwise use request language
         final_language = language_override if language_override else request.language
 
+        # SANITIZATION: Add punctuation to prevent run-on/hallucination
+        sanitized_input = request.input.strip()
+        if sanitized_input and not sanitized_input[-1] in ".!?,:;" :
+            sanitized_input += "."
+            logger.info(f"Sanitized input: '{request.input}' -> '{sanitized_input}'")
+
+
+        # Resolve voice name to audio file path
+        # Priority: audio_prompt (explicit file path) > voice (name-based resolution)
+        audio_prompt_path = request.audio_prompt
+
+        if not audio_prompt_path and request.voice and request.voice != "default":
+            # Import voice mapper here to avoid circular imports
+            from api.services.voice_mapper import get_voice_mapper
+
+            voice_mapper = get_voice_mapper()
+            resolved_path = voice_mapper.get_voice_path(request.voice)
+
+            if resolved_path:
+                audio_prompt_path = str(resolved_path)
+                logger.info(
+                    f"Resolved voice '{request.voice}' to '{resolved_path.name}'"
+                )
+            else:
+                available_voices = voice_mapper.list_voice_names()
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Voice '{request.voice}' not found. Available voices: {', '.join(available_voices[:10])}{' and more...' if len(available_voices) > 10 else ''}",
+                )
+
         # Generate audio
         logger.info(
-            f"Generating speech: text_len={len(request.input)}, lang={final_language}, format={request.response_format}, model={request.model}"
+            f"Generating speech: text_len={len(request.input)}, lang={final_language}, voice={request.voice}, format={request.response_format}, model={request.model}"
         )
 
         audio = await service.generate_audio(
-            text=request.input,
+            text=sanitized_input,
             language=final_language,
-            audio_prompt_path=request.audio_prompt,
+            audio_prompt_path=audio_prompt_path,
             temperature=request.temperature,
             cfg_weight=request.cfg_weight,
             exaggeration=request.exaggeration,
@@ -82,6 +112,43 @@ async def create_speech(request: OpenAISpeechRequest):
         audio_bytes = service.convert_audio_format(
             audio, format=request.response_format, sample_rate=service.model.sr
         )
+
+        # Post-process: Trim silence/artifacts (Pydub)
+        try:
+            from pydub import AudioSegment
+            from pydub.silence import split_on_silence
+            import io
+            
+            # Load generated audio (usually wav container from service)
+            # Note: service.convert_audio_format likely returns wav/mp3 bytes
+            seg = AudioSegment.from_file(io.BytesIO(audio_bytes))
+            
+            # Split on silence to remove trailing artifacts
+            # min_silence_len=200ms, thresh=-40dB
+            chunks = split_on_silence(seg, min_silence_len=200, silence_thresh=-40)
+            if chunks:
+                logger.info(f"Silence trimming: kept {len(chunks)} chunks")
+                cleaned_seg = chunks[0]
+                # Heuristic: If text is short (<30 chars), likely single word/phrase.
+                # If multiple chunks found, it's likely repetition/hallucination.
+                # Only keep adjacent chunks if they are close? Or just keep first?
+                # For this use case (game assets), keeping first chunk is safest for short text.
+                should_keep_all = len(request.input) > 50
+                if should_keep_all:
+                    for c in chunks[1:]:
+                        cleaned_seg += c
+                else:
+                    logger.info(f"Short text detected ({len(request.input)} chars). Keeping only first chunk of {len(chunks)}.")
+                
+                out_io = io.BytesIO()
+                # Export matching the requested format
+                fmt = request.response_format if request.response_format != 'pcm' else 'wav'
+                cleaned_seg.export(out_io, format=fmt)
+                audio_bytes = out_io.getvalue()
+            else:
+                logger.warning("Silence trimming found no audio! Keeping original.")
+        except Exception as e:
+            logger.warning(f"Silence trimming failed: {e}")
 
         # Set content type
         content_types = {
@@ -118,18 +185,37 @@ async def list_voices():
     for the multilingual model.
     """
     try:
+        from api.services.voice_mapper import get_voice_mapper
+
         service = await get_tts_service()
         languages = service.get_supported_languages()
+        voice_mapper = get_voice_mapper()
 
-        # Create voice info for the multilingual model
-        # The model uses voice cloning, so we list supported languages
-        voices = [
+        # Get all discovered voice samples
+        discovered_voices = voice_mapper.list_voice_names()
+
+        # Create voice info for each discovered voice
+        # All voices support all languages via voice cloning
+        voices = []
+
+        # Add default voice (no cloning)
+        voices.append(
             VoiceInfo(
                 id="default",
-                name="Default Multilingual Voice",
+                name="Default (No Voice Cloning)",
                 languages=list(languages.keys()),
             )
-        ]
+        )
+
+        # Add discovered voice samples
+        for voice_name in discovered_voices:
+            voices.append(
+                VoiceInfo(
+                    id=voice_name,
+                    name=voice_name.capitalize(),
+                    languages=list(languages.keys()),
+                )
+            )
 
         return VoicesResponse(voices=voices)
 
